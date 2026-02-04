@@ -13,7 +13,7 @@ export default async function handler(req, res) {
       method: req.method,
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.FUSEPLANE_SECRET_KEY || ""}`,
+        "Authorization": `Bearer ${process.env.EASYBUILD_SECRET_KEY || ""}`,
       },
       body:
         req.method !== "GET" && req.method !== "HEAD"
