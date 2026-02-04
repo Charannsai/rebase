@@ -1,34 +1,22 @@
-// api/p/[...path].js
+// FUSEPLANE_RUNTIME: vercel
+// FUSEPLANE_VERSION: 0.1.1
 
-export default async function handler(req, res) {
+const GATEWAY_URL = "https://api.tryezbuild.tech";
+
+module.exports = async function handler(req, res) {
+  const pathParts = req.query.path;
+  const forwardPath = Array.isArray(pathParts)
+    ? pathParts.join("/")
+    : pathParts || "";
+
+  const url = `${GATEWAY_URL}/api/p/${forwardPath}`;
+
   try {
-    const rawPath = req.query["...path"];
-
-    if (!rawPath) {
-      return res.status(400).json({ error: "Missing path" });
-    }
-
-    const parts = Array.isArray(rawPath) ? rawPath : [rawPath];
-
-    // First segment is slug
-    const slug = parts[0];
-
-    if (!slug) {
-      return res.status(400).json({ error: "Missing project slug" });
-    }
-
-    // Everything after slug is forwarded endpoint
-    const forwardPath = parts.slice(1).join("/");
-
-    const targetUrl = `https://api.tryezbuild.tech/api/p/${slug}/${forwardPath}`;
-
-    console.log("Forwarding:", req.method, targetUrl);
-
-    const response = await fetch(targetUrl, {
+    const response = await fetch(url, {
       method: req.method,
       headers: {
-        "Content-Type": req.headers["content-type"] || "application/json",
-        "Authorization": `Bearer ${process.env.EASYBUILD_SECRET_KEY || ""}`,
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.FUSEPLANE_SECRET_KEY || ""}`,
       },
       body:
         req.method !== "GET" && req.method !== "HEAD"
@@ -36,20 +24,10 @@ export default async function handler(req, res) {
           : undefined,
     });
 
-    const text = await response.text();
-
-    res.status(response.status);
-
-    // Forward response headers safely
-    const contentType = response.headers.get("content-type");
-    if (contentType) {
-      res.setHeader("Content-Type", contentType);
-    }
-
-    res.send(text);
-
+    const data = await response.text();
+    res.status(response.status).send(data);
   } catch (error) {
-    console.error("Proxy error:", error);
-    res.status(500).json({ error: "Gateway failed" });
+    console.error("Fuseplane proxy error:", error);
+    res.status(500).json({ error: "Proxy failed" });
   }
-}
+};
