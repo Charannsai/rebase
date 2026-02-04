@@ -1,9 +1,6 @@
-// FUSEPLANE_RUNTIME: vercel
-// FUSEPLANE_VERSION: 0.1.1
-
 const GATEWAY_URL = "https://api.tryezbuild.tech";
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   const pathParts = req.query.path;
   const forwardPath = Array.isArray(pathParts)
     ? pathParts.join("/")
@@ -30,4 +27,4 @@ module.exports = async function handler(req, res) {
     console.error("Fuseplane proxy error:", error);
     res.status(500).json({ error: "Proxy failed" });
   }
-};
+}
