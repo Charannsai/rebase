@@ -7,19 +7,18 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), tailwindcss()],
-    server: { 
+      server: {
       proxy: {
-        '/api/p': {
-          target: 'https://api.tryezbuild.tech',        
+        '^/[a-z0-9]{8}/.*': {
+          target: 'https://gnusnjlf.fuseplane.com',
           changeOrigin: true,
           secure: true,
-          configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq) => {        
-              proxyReq.setHeader('Authorization', `Bearer ${env.EASYBUILD_SECRET_KEY || ''}`)
-            })
+          configure: (proxy, _options) => {
+            proxy.on('proxyReq', (proxyReq, _req, _res) => {
+              proxyReq.setHeader('Authorization', `Bearer ${env.FUSEPLANE_SECRET_KEY || ''}`)
+            });
           }
         }
       }
-    }
-  }
+    }}
 })

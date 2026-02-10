@@ -1,6 +1,9 @@
-const GATEWAY_URL = "https://api.tryezbuild.tech";
+// FUSEPLANE_RUNTIME: vercel
+// FUSEPLANE_VERSION: 0.1.5
 
-export default async function handler(req, res) {
+const GATEWAY_URL = "https://gNUSNjlF.fuseplane.com";
+
+module.exports = async function handler(req, res) {
   const pathParts = req.query.path;
   const forwardPath = Array.isArray(pathParts)
     ? pathParts.join("/")
@@ -13,7 +16,7 @@ export default async function handler(req, res) {
       method: req.method,
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.EASYBUILD_SECRET_KEY || ""}`,
+        "Authorization": `Bearer ${process.env.FUSEPLANE_SECRET_KEY || ""}`,
       },
       body:
         req.method !== "GET" && req.method !== "HEAD"
@@ -27,4 +30,4 @@ export default async function handler(req, res) {
     console.error("Fuseplane proxy error:", error);
     res.status(500).json({ error: "Proxy failed" });
   }
-}
+};
