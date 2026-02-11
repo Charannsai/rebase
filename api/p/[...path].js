@@ -25,8 +25,8 @@ export default async function handler(req, res) {
           : undefined,
     });
 
-    const data = await response.text();
-    res.status(response.status).send(data);
+   const data = await response.json();
+res.status(response.status).json(data);
   } catch (error) {
     console.error("Fuseplane proxy error:", error);
     res.status(500).json({ error: "Proxy failed" });
