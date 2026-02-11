@@ -7,19 +7,19 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), tailwindcss()],
-      server: {
-      proxy: {
-        
-        '^/[a-z0-9]{8}/.*': {
-          target: 'https://gnusnjlf.fuseplane.com',
-          changeOrigin: true,
-          secure: true,
-          configure: (proxy, _options) => {
-            proxy.on('proxyReq', (proxyReq, _req, _res) => {
-              proxyReq.setHeader('Authorization', `Bearer ${env.FUSEPLANE_SECRET_KEY || ''}`)
-            });
-          }
+    server: {
+    // FUSEPLANE: API Gateway Proxy
+    proxy: {
+      '^/[a-z0-9]{8}/.*': {
+        target: env.FUSEPLANE_URL || 'https://api.fuseplane.com',
+        changeOrigin: true,
+        secure: true,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.setHeader('Authorization', `Bearer ${env.FUSEPLANE_SECRET_KEY || ''}`)
+          })
         }
       }
+    }
     }}
 })
