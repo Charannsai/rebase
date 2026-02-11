@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react(), tailwindcss()],
       server: {
       proxy: {
+        
         '^/[a-z0-9]{8}/.*': {
           target: 'https://gnusnjlf.fuseplane.com',
           changeOrigin: true,

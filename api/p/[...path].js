@@ -9,7 +9,7 @@ module.exports = async function handler(req, res) {
     ? pathParts.join("/")
     : pathParts || "";
 
-  const url = `${GATEWAY_URL}/api/p/${forwardPath}`;
+  const url = `${GATEWAY_URL}/${forwardPath}`;
 
   try {
     const response = await fetch(url, {
