@@ -3,13 +3,10 @@
 
 const GATEWAY_URL = process.env.FUSEPLANE_URL || "https://api.fuseplane.com";
 
-module.exports = async function handler(req, res) {
-  const pathParts = req.query.path;
-  const forwardPath = Array.isArray(pathParts)
-    ? pathParts.join("/")
-    : pathParts || "";
-
-  const url = `${GATEWAY_URL}/${forwardPath}`;
+export default async function handler(req, res) {
+  const path = req.url.startsWith("/") ? req.url.slice(1) : req.url;
+  
+  const url = `${GATEWAY_URL}/${path}`;
 
   try {
     const response = await fetch(url, {
