@@ -4,22 +4,23 @@
 const GATEWAY_URL = "https://gNUSNjlF.fuseplane.com";
 
 module.exports = async function handler(req, res) {
-  // Use req.url directly to support any route structure. 
-  // This works even if you move away from /api/p or use vercel.json rewrites.
-  
-  // Remove leading slash to ensure clean concatenation with GATEWAY_URL
-  const forwardPath = req.url.startsWith("/") ? req.url.slice(1) : req.url;
+  // 1. Capture the full incmoing path (e.g., /12345678/users) directly from req.url
+  // This works regardless of the file name or location, as long as Vercel rewrites to it.
+  const requestPath = req.url.startsWith("/") ? req.url : `/${req.url}`;
 
-  // This will now correctly include query parameters (e.g., ?limit=10) automatically
-  const url = `${GATEWAY_URL}/${forwardPath}`;
+  // 2. Construct the full destination URL
+  // Result: https://gNUSNjlF.fuseplane.com/12345678/users
+  const url = `${GATEWAY_URL}${requestPath}`;
 
   try {
     const response = await fetch(url, {
       method: req.method,
       headers: {
         "Content-Type": "application/json",
+        // Ensure this environment variable is set in your Vercel Project Settings
         "Authorization": `Bearer ${process.env.FUSEPLANE_SECRET_KEY || ""}`,
       },
+      // Forward the body for non-GET/HEAD requests
       body:
         req.method !== "GET" && req.method !== "HEAD"
           ? JSON.stringify(req.body)
