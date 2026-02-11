@@ -1,14 +1,16 @@
 // FUSEPLANE_RUNTIME: vercel
-// FUSEPLANE_VERSION: 0.1.5
+// FUSEPLANE_VERSION: 0.1.6
 
 const GATEWAY_URL = "https://gNUSNjlF.fuseplane.com";
 
 module.exports = async function handler(req, res) {
-  const pathParts = req.query.path;
-  const forwardPath = Array.isArray(pathParts)
-    ? pathParts.join("/")
-    : pathParts || "";
+  // Use req.url directly to support any route structure. 
+  // This works even if you move away from /api/p or use vercel.json rewrites.
+  
+  // Remove leading slash to ensure clean concatenation with GATEWAY_URL
+  const forwardPath = req.url.startsWith("/") ? req.url.slice(1) : req.url;
 
+  // This will now correctly include query parameters (e.g., ?limit=10) automatically
   const url = `${GATEWAY_URL}/${forwardPath}`;
 
   try {
