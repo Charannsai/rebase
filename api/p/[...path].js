@@ -5,10 +5,7 @@ const GATEWAY_URL = process.env.FUSEPLANE_URL || "https://api.fuseplane.com";
 
 // 1. configuration: FORCE "export default" instead of "module.exports"
 export default async function handler(req, res) {
-  // 2. Use req.url to get the full path (e.g., "/12345678/users")
-  // This mirrors your Vite proxy behavior by capturing the raw URL.
-  // We remove the leading slash if present to avoid double slashes.
-  const path = req.url.startsWith("/") ? req.url.slice(1) : req.url;
+const path = req.url.startsWith("/") ? req.url.slice(1) : req.url;
   
   const url = `${GATEWAY_URL}/${path}`;
 
