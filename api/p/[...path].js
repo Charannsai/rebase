@@ -3,7 +3,6 @@
 
 const GATEWAY_URL = process.env.FUSEPLANE_URL || "https://api.fuseplane.com";
 
-// 1. configuration: FORCE "export default" instead of "module.exports"
 export default async function handler(req, res) {
 const path = req.url.startsWith("/") ? req.url.slice(1) : req.url;
   
