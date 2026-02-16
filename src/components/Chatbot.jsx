@@ -1,254 +1,169 @@
-import { useState } from "react";
-import {
-  Mail,
-  Send,
-  Loader2,
-  Paperclip,
-  FileText,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+"use client";
 
-const Chatbot = () => {
-  const [to, setTo] = useState("");
-  const [subject, setSubject] = useState("");
-  const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [status, setStatus] = useState(null);
-  const [lastEmailId, setLastEmailId] = useState(null);
-  const [attachments, setAttachments] = useState([]);
-  const [attachmentsLoading, setAttachmentsLoading] = useState(false);
-  const [attachmentsError, setAttachmentsError] = useState(null);
+import React, { useState } from "react";
 
-  // Send email via POST to the Resend emails endpoint
-  const handleSend = async () => {
-    if (!to || !subject || !message || isLoading) return;
+// --- Icons ---
+const SparklesIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className={className}
+  >
+    <path
+      fillRule="evenodd"
+      d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576 2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813a3.75 3.75 0 002.576-2.576l.813-2.846A.75.75 0 019 4.5zM9 15a.75.75 0 01.75.75v1.5h1.5a.75.75 0 010 1.5h-1.5v1.5a.75.75 0 01-1.5 0v-1.5h-1.5a.75.75 0 010-1.5h1.5v-1.5A.75.75 0 019 15z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
 
-    setIsLoading(true);
-    setStatus(null);
-    setLastEmailId(null);
-    setAttachments([]);
-    setAttachmentsError(null);
+const LoadingSpinner = () => (
+  <svg
+    className="animate-spin h-5 w-5 text-gray-500"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <circle
+      className="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+    ></circle>
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+    ></path>
+  </svg>
+);
+
+export default function Chatbot() {
+  // Chat State
+  const [input, setInput] = useState("");
+  const [response, setResponse] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatError, setChatError] = useState(null);
+
+  const handleSendChat = async () => {
+    if (!input.trim()) return;
+
+    setChatLoading(true);
+    setChatError(null);
+    setResponse("");
 
     try {
-      // Support comma separated emails
-      const recipients = to
-        .split(",")
-        .map((email) => email.trim())
-        .filter(Boolean);
-
-      let emailId = null;
-
-      for (const recipient of recipients) {
-        const res = await fetch("/1vvbpdt0/emails", {
+      const res = await fetch(
+        "/60d5jq3f/v1beta/models/gemini-2.5-flash:generateContent",
+        {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            from: "Example <no-reply@fuseplane.com>",
-            to: recipient,
-            subject,
-            html: `<p>${message.replace(/\n/g, "<br/>")}</p>`,
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: input }],
+              },
+            ],
           }),
-        });
-
-        if (!res.ok) {
-          throw new Error(await res.text());
         }
+      );
 
-        const data = await res.json();
-        // Store the last email ID (from Resend response: { id: "..." })
-        if (data?.id) {
-          emailId = data.id;
-        }
-      }
-
-      setLastEmailId(emailId);
-      setStatus("Emails sent successfully ✅");
-      setTo("");
-      setSubject("");
-      setMessage("");
-    } catch (error) {
-      console.error("Email Error:", error);
-      setStatus("Failed to send email ❌");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // List attachments for a given email via GET
-  const handleListAttachments = async (emailId) => {
-    if (!emailId) return;
-
-    setAttachmentsLoading(true);
-    setAttachmentsError(null);
-    setAttachments([]);
-
-    try {
-      const res = await fetch(`/1vvbpdt0/emails/${emailId}/attachments`, {
-        method: "GET",
-      });
-
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
+      if (!res.ok) throw new Error(await res.text());
 
       const data = await res.json();
-      // Resend returns { data: [ { id, filename, content_type } ] }
-      setAttachments(data?.data || []);
-    } catch (error) {
-      console.error("List Attachments Error:", error);
-      setAttachmentsError("Failed to fetch attachments ❌");
+      const text =
+        data?.candidates?.[0]?.content?.parts?.[0]?.text ??
+        "No response received";
+
+      setResponse(text);
+    } catch (err) {
+      console.error(err);
+      setChatError("Failed to get response from Gemini.");
     } finally {
-      setAttachmentsLoading(false);
+      setChatLoading(false);
     }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-xl p-6"
-    >
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-slate-900 font-semibold text-xl flex items-center gap-2">
-          <Mail className="text-blue-600" />
-          Send Email
-        </h3>
-      </div>
-
-      {/* Form */}
-      <div className="space-y-4">
-        <div>
-          <label className="text-sm text-slate-600 mb-1 block">To</label>
-          <input
-            type="email"
-            placeholder="recipient@example.com"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
-          />
+    <div className="min-h-screen bg-gray-50 text-gray-900 flex items-center justify-center p-4 sm:p-8 font-sans">
+      <div className="w-full max-w-3xl relative z-10">
+        {/* Header Section */}
+        <div className="text-center mb-10">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">
+            Fuseplane Example <span className="text-gray-400 font-light mx-2">|</span> Chat Application
+          </h1>
+          <p className="text-gray-500">
+            Securely interact with AI services
+          </p>
         </div>
 
-        <div>
-          <label className="text-sm text-slate-600 mb-1 block">Subject</label>
-          <input
-            type="text"
-            placeholder="Enter subject"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
-          />
-        </div>
+        {/* Main Card */}
+        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+          {/* Content Area */}
+          <div className="p-6 md:p-10 min-h-[400px]">
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700 uppercase tracking-wide">Ask Gemini 2.5 Flash</label>
+                <div className="relative">
+                  <textarea
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 text-gray-800 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all resize-none placeholder-gray-400 text-base shadow-inner"
+                    rows={4}
+                    placeholder="How can I help you today?"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                  />
+                  <div className="absolute bottom-3 right-3 text-xs text-gray-400 font-mono">
+                    {input.length} chars
+                  </div>
+                </div>
 
-        <div>
-          <label className="text-sm text-slate-600 mb-1 block">Message</label>
-          <textarea
-            rows={6}
-            placeholder="Type your message here..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:bg-white transition-all resize-none"
-          />
-        </div>
-
-        <button
-          onClick={handleSend}
-          disabled={isLoading}
-          className="w-full flex justify-center items-center gap-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-xl py-3 transition-all mt-2"
-        >
-          {isLoading ? (
-            <Loader2 size={20} className="animate-spin" />
-          ) : (
-            <>
-              <Send size={18} />
-              Send Email
-            </>
-          )}
-        </button>
-
-        {status && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className={`text-sm text-center mt-4 ${status.includes("successfully")
-              ? "text-green-600"
-              : "text-red-600"
-              }`}
-          >
-            {status}
-          </motion.p>
-        )}
-
-        {/* List Attachments Section */}
-        <AnimatePresence>
-          {lastEmailId && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="border-t border-slate-200 pt-4 mt-4"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs text-slate-500">
-                  Email ID: <span className="font-mono text-slate-700">{lastEmailId}</span>
-                </p>
-                <button
-                  onClick={() => handleListAttachments(lastEmailId)}
-                  disabled={attachmentsLoading}
-                  className="flex items-center gap-1.5 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded-lg px-3 py-1.5 transition-all disabled:opacity-50"
-                >
-                  {attachmentsLoading ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    <Paperclip size={14} />
-                  )}
-                  List Attachments
-                </button>
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleSendChat}
+                    disabled={chatLoading || !input.trim()}
+                    className="bg-black hover:bg-gray-800 text-white font-medium py-2.5 px-6 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] flex items-center gap-2 text-sm"
+                  >
+                    {chatLoading ? (
+                      <>
+                        <LoadingSpinner /> Thinking...
+                      </>
+                    ) : (
+                      <>
+                        <SparklesIcon className="w-4 h-4" /> Generate Response
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
 
-              {attachmentsError && (
-                <p className="text-xs text-red-500 mt-2">{attachmentsError}</p>
+              {chatError && (
+                <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+                  {chatError}
+                </div>
               )}
 
-              {attachments.length > 0 && (
-                <motion.ul
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="space-y-2 mt-2"
-                >
-                  {attachments.map((att, idx) => (
-                    <li
-                      key={att.id || idx}
-                      className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700"
-                    >
-                      <FileText size={16} className="text-slate-400 shrink-0" />
-                      <span className="truncate font-medium">
-                        {att.filename || "Unnamed"}
-                      </span>
-                      {att.content_type && (
-                        <span className="ml-auto text-xs text-slate-400">
-                          {att.content_type}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </motion.ul>
+              {response && (
+                <div className="mt-8 pt-8 border-t border-gray-100">
+                  <span className="text-xs uppercase tracking-wider text-gray-400 font-bold mb-4 block">AI Response</span>
+                  <div className="bg-gray-50/50 rounded-xl p-6 leading-relaxed text-gray-700">
+                    <p className="whitespace-pre-wrap">
+                      {response}
+                    </p>
+                  </div>
+                </div>
               )}
+            </div>
+          </div>
 
-              {attachments.length === 0 &&
-                !attachmentsLoading &&
-                !attachmentsError && (
-                  <p className="text-xs text-slate-400 mt-2">
-                    Click "List Attachments" to fetch attachments for this email.
-                  </p>
-                )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+          {/* Footer/Status Bar */}
+          
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
-};
-
-export default Chatbot;
+}
