@@ -101,8 +101,7 @@ export default function Chatbot() {
         </div>
 
        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-          {/* Content Area */}
-          <div className="p-6 md:p-10 min-h-[400px]">
+         <div className="p-6 md:p-10 min-h-[400px]">
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="space-y-4">
                 <label className="block text-sm font-medium text-gray-700 uppercase tracking-wide">Ask Gemini 2.5 Flash</label>
