@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), tailwindcss()],
     server: {
-    // FUSEPLANE: API Gateway Proxy
+    
     proxy: {
       '^/[a-z0-9]{8}/.*': {
         target: env.FUSEPLANE_URL || 'https://api.fuseplane.com',

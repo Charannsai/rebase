@@ -57,7 +57,7 @@ export default function Chatbot() {
 
     try {
       const res = await fetch(
-        "/60d5jq3f/v1beta/models/gemini-2.5-flash:generateContent",
+        "/r2gdhpue/v1beta/models/gemini-2.5-flash:generateContent",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
