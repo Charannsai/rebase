@@ -100,8 +100,7 @@ export default function Chatbot() {
           </p>
         </div>
 
-        {/* Main Card */}
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
           {/* Content Area */}
           <div className="p-6 md:p-10 min-h-[400px]">
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
