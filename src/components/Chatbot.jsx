@@ -91,7 +91,6 @@ export default function Chatbot() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex items-center justify-center p-4 sm:p-8 font-sans">
       <div className="w-full max-w-3xl relative z-10">
-        {/* Header Section */}
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">
             Fuseplane Example <span className="text-gray-400 font-light mx-2">|</span> Chat Application
