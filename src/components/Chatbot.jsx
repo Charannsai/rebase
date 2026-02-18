@@ -136,6 +136,7 @@ export default function Chatbot() {
                   </button>
                 </div>
               </div>
+              {/*error function*/}
 
               {chatError && (
                 <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm flex items-center gap-2">
